@@ -7,10 +7,10 @@ LICENSE.OLD
 COPYING.LIB"
 TERMUX_PKG_MAINTAINER="@termux"
 TERMUX_PKG_VERSION=9.0
-TERMUX_PKG_REVISION=1
+TERMUX_PKG_REVISION=2
 TERMUX_PKG_SRCURL=https://dl.winehq.org/wine/source/${TERMUX_PKG_VERSION:0:3}/wine-$TERMUX_PKG_VERSION.tar.xz
 TERMUX_PKG_SHA256=7cfd090a5395f5b76d95bb5defac8a312c8de4c070c1163b8b58da38330ca6ee
-TERMUX_PKG_DEPENDS="fontconfig, freetype, krb5, libandroid-spawn, libc++, libgmp, libgnutls, libxcb, libxcomposite, libxcursor, libxfixes, libxrender, mesa, opengl, pulseaudio, sdl2, vulkan-loader, xorg-xrandr"
+TERMUX_PKG_DEPENDS="fontconfig, freetype, krb5, libandroid-spawn, libc++, libgmp, libgnutls, libxcb, libxcomposite, libxcursor, libxfixes, libxrender, mesa, opengl, pulseaudio, sdl2, vulkan-loader, xorg-xrandr, gstreamer, gst-plugins-base"
 TERMUX_PKG_ANTI_BUILD_DEPENDS="vulkan-loader"
 TERMUX_PKG_BUILD_DEPENDS="libandroid-spawn-static, vulkan-loader-generic"
 TERMUX_PKG_NO_STATICSPLIT=true
@@ -37,7 +37,7 @@ exec_prefix=$TERMUX_PREFIX
 --with-gettextpo=no
 --without-gphoto
 --with-gnutls
---without-gstreamer
+--with-gstreamer
 --without-inotify
 --with-krb5
 --with-mingw
@@ -77,6 +77,11 @@ fi
 # Enable new WoW64 support on x86_64.
 if [ "$TERMUX_ARCH" = "x86_64" ]; then
 	TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" --enable-archs=i386,x86_64"
+fi
+
+# Enable new WoW64 support on AArch64.
+if [ "$TERMUX_ARCH" = "aarch64" ]; then
+	TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" --enable-archs=aarch64,arm"
 fi
 
 TERMUX_PKG_BLACKLISTED_ARCHES="arm"
