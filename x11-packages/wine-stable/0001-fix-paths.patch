@@ -1,7 +1,7 @@
 diff -uNr a/dlls/crypt32/unixlib.c b/dlls/crypt32/unixlib.c
 --- a/dlls/crypt32/unixlib.c
 +++ b/dlls/crypt32/unixlib.c
-@@ -619,6 +619,7 @@
+@@ -621,6 +621,7 @@
   "/usr/local/share/certs/",
   "/etc/sfw/openssl/certs",
   "/etc/security/cacerts",  /* Android */
@@ -12,7 +12,7 @@ diff -uNr a/dlls/crypt32/unixlib.c b/dlls/crypt32/unixlib.c
 diff -uNr a/dlls/dbghelp/macho_module.c b/dlls/dbghelp/macho_module.c
 --- a/dlls/dbghelp/macho_module.c
 +++ b/dlls/dbghelp/macho_module.c
-@@ -1578,7 +1578,7 @@
+@@ -1628,7 +1628,7 @@
      {
          const WCHAR* fallback = process_getenv(pcs, L"DYLD_FALLBACK_LIBRARY_PATH");
          if (!fallback)
@@ -24,20 +24,20 @@ diff -uNr a/dlls/dbghelp/macho_module.c b/dlls/dbghelp/macho_module.c
 diff -uNr a/dlls/dbghelp/module.c b/dlls/dbghelp/module.c
 --- a/dlls/dbghelp/module.c
 +++ b/dlls/dbghelp/module.c
-@@ -671,10 +671,10 @@
-     fmap_link = HeapAlloc(GetProcessHeap(), 0, sizeof(*fmap_link));
-     if (!fmap_link) return NULL;
- 
--    p = malloc(sizeof(L"/usr/lib/debug/.build-id/") +
-+    p = malloc(sizeof(L"@TERMUX_PREFIX@//lib/debug/.build-id/") +
-                (idlen * 2 + 1) * sizeof(WCHAR) + sizeof(L".debug"));
-     if (!p) goto fail;
--    wcscpy(p, L"/usr/lib/debug/.build-id/");
-+    wcscpy(p, L"@TERMUX_PREFIX@//lib/debug/.build-id/");
-     z = p + wcslen(p);
-     if (idlen)
-     {
-@@ -778,7 +778,7 @@
+@@ -708,10 +708,10 @@
+     if (!idlen) return NULL;
+
+     if (!(fmap_link = HeapAlloc(GetProcessHeap(), 0, sizeof(*fmap_link))))
+         return NULL;
+-    if (image_locate_build_id_target_in_dir(fmap_link, id, idlen, L"/usr/lib/debug/.build-id/"))
++    if (image_locate_build_id_target_in_dir(fmap_link, id, idlen, L"@TERMUX_PREFIX@//lib/debug/.build-id/"))
+         return fmap_link;
+-    if (image_locate_build_id_target_in_dir(fmap_link, id, idlen, L"/usr/lib/.build-id/"))
++    if (image_locate_build_id_target_in_dir(fmap_link, id, idlen, L"@TERMUX_PREFIX@//lib/.build-id/"))
+         return fmap_link;
+
+     sz = GetEnvironmentVariableW(L"WINEHOMEDIR", NULL, 0);
+@@ -797,7 +797,7 @@
                  if (!ret)
                  {
                      dst = HeapAlloc(GetProcessHeap(), 0,
@@ -46,7 +46,7 @@ diff -uNr a/dlls/dbghelp/module.c b/dlls/dbghelp/module.c
                      if (dst)
                      {
                          WCHAR* p;
-@@ -788,7 +788,7 @@
+@@ -807,7 +807,7 @@
                           * where the alternate file is...
                           * so try both
                           */
@@ -58,7 +58,7 @@ diff -uNr a/dlls/dbghelp/module.c b/dlls/dbghelp/module.c
 diff -uNr a/dlls/msvcrt/tests/environ.c b/dlls/msvcrt/tests/environ.c
 --- a/dlls/msvcrt/tests/environ.c
 +++ b/dlls/msvcrt/tests/environ.c
-@@ -41,7 +41,8 @@
+@@ -43,7 +43,8 @@
   "/lib/mingw32/3.4.2/;"
   "/lib/;"
   "/usr/lib/mingw32/3.4.2/;"
@@ -71,10 +71,10 @@ diff -uNr a/dlls/msvcrt/tests/environ.c b/dlls/msvcrt/tests/environ.c
 diff -uNr a/dlls/ntdll/unix/server.c b/dlls/ntdll/unix/server.c
 --- a/dlls/ntdll/unix/server.c
 +++ b/dlls/ntdll/unix/server.c
-@@ -1257,10 +1257,10 @@
-     else
-         snprintf( tmp + p, sizeof(tmp) - p, "%lx", (unsigned long)ino );
- 
+@@ -1252,10 +1252,10 @@
+ {
+    char *dir = NULL;
+
 -#ifdef __ANDROID__  /* there's no /tmp dir on Android */
 +#if defined(__ANDROID__) && ! defined(__TERMUX__)  /* there's no /tmp dir on Android */
      asprintf( &dir, "%s/.wineserver/server-%s", config_dir, tmp );
@@ -108,7 +108,7 @@ diff -uNr a/programs/winebrowser/main.c b/programs/winebrowser/main.c
 diff -uNr a/programs/winemenubuilder/winemenubuilder.c b/programs/winemenubuilder/winemenubuilder.c
 --- a/programs/winemenubuilder/winemenubuilder.c
 +++ b/programs/winemenubuilder/winemenubuilder.c
-@@ -1708,7 +1708,7 @@
+@@ -1724,7 +1724,7 @@
      if (_wgetenv( L"XDG_DATA_DIRS" ))
          dirs = xwcsdup( _wgetenv( L"XDG_DATA_DIRS" ));
      else
@@ -120,22 +120,18 @@ diff -uNr a/programs/winemenubuilder/winemenubuilder.c b/programs/winemenubuilde
 diff -uNr a/server/request.c b/server/request.c
 --- a/server/request.c
 +++ b/server/request.c
-@@ -657,15 +657,15 @@
+@@ -639,15 +639,15 @@
  
      /* create the base directory if needed */
  
 -#ifdef __ANDROID__  /* there's no /tmp dir on Android */
 +#if defined(__ANDROID__) && ! defined(__TERMUX__)  /* there's no /tmp dir on Android */
-     len += strlen( config_dir ) + sizeof("/.wineserver");
-     if (!(server_dir = malloc( len ))) fatal_error( "out of memory\n" );
-     strcpy( server_dir, config_dir );
-     strcat( server_dir, "/.wineserver" );
+     if (asprintf( &base_dir, "%s/.wineserver", config_dir ) == -1)
+         fatal_error( "out of memory\n" );
  #else
--    len += sizeof("/tmp/.wine-") + 12;
-+    len += sizeof("@TERMUX_PREFIX@/tmp/.wine-") + 12;
-     if (!(server_dir = malloc( len ))) fatal_error( "out of memory\n" );
--    sprintf( server_dir, "/tmp/.wine-%u", getuid() );
-+    sprintf( server_dir, "@TERMUX_PREFIX@/tmp/.wine-%u", getuid() );
+-    if (asprintf( &base_dir, "/tmp/.wine-%u", getuid() ) == -1)
++    if (asprintf( &base_dir, "@TERMUX_PREFIX@/tmp/.wine-%u", getuid() ) == -1)
+         fatal_error( "out of memory\n" );
  #endif
-     create_dir( server_dir, &st2 );
+     create_dir( base_dir, &st2 );
  
