@@ -6,8 +6,8 @@ LICENSE
 LICENSE.OLD
 COPYING.LIB"
 TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION=9.0
-TERMUX_PKG_REVISION=2
+TERMUX_PKG_VERSION=10.0-rc3
+TERMUX_PKG_REVISION=1
 TERMUX_PKG_SRCURL=https://dl.winehq.org/wine/source/${TERMUX_PKG_VERSION:0:3}/wine-$TERMUX_PKG_VERSION.tar.xz
 TERMUX_PKG_SHA256=7cfd090a5395f5b76d95bb5defac8a312c8de4c070c1163b8b58da38330ca6ee
 TERMUX_PKG_DEPENDS="fontconfig, freetype, krb5, libandroid-spawn, libc++, libgmp, libgnutls, libxcb, libxcomposite, libxcursor, libxfixes, libxrender, mesa, opengl, pulseaudio, sdl2, vulkan-loader, xorg-xrandr, gstreamer, gst-plugins-base"
