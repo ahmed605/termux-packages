@@ -26,7 +26,7 @@ diff -uNr a/dlls/dbghelp/module.c b/dlls/dbghelp/module.c
 +++ b/dlls/dbghelp/module.c
 @@ -708,10 +708,10 @@
      if (!idlen) return NULL;
-
+ 
      if (!(fmap_link = HeapAlloc(GetProcessHeap(), 0, sizeof(*fmap_link))))
          return NULL;
 -    if (image_locate_build_id_target_in_dir(fmap_link, id, idlen, L"/usr/lib/debug/.build-id/"))
@@ -35,7 +35,7 @@ diff -uNr a/dlls/dbghelp/module.c b/dlls/dbghelp/module.c
 -    if (image_locate_build_id_target_in_dir(fmap_link, id, idlen, L"/usr/lib/.build-id/"))
 +    if (image_locate_build_id_target_in_dir(fmap_link, id, idlen, L"@TERMUX_PREFIX@//lib/.build-id/"))
          return fmap_link;
-
+ 
      sz = GetEnvironmentVariableW(L"WINEHOMEDIR", NULL, 0);
 @@ -797,7 +797,7 @@
                  if (!ret)
@@ -73,14 +73,14 @@ diff -uNr a/dlls/ntdll/unix/server.c b/dlls/ntdll/unix/server.c
 +++ b/dlls/ntdll/unix/server.c
 @@ -1252,10 +1252,10 @@
  {
-    char *dir = NULL;
+     char *dir = NULL;
 
 -#ifdef __ANDROID__  /* there's no /tmp dir on Android */
 +#if defined(__ANDROID__) && ! defined(__TERMUX__)  /* there's no /tmp dir on Android */
-     asprintf( &dir, "%s/.wineserver/server-%s", config_dir, tmp );
+     asprintf( &dir, "%s/.wineserver/server-%llx-%llx", config_dir, (unsigned long long)dev, (unsigned long long)ino );
  #else
--    asprintf( &dir, "/tmp/.wine-%u/server-%s", getuid(), tmp );
-+    asprintf( &dir, "@TERMUX_PREFIX@/tmp/.wine-%u/server-%s", getuid(), tmp );
+-    asprintf( &dir, "/tmp/.wine-%u/server-%llx-%llx", getuid(), (unsigned long long)dev, (unsigned long long)ino );
++    asprintf( &dir, "@TERMUX_PREFIX@/tmp/.wine-%u/server-%llx-%llx", getuid(), (unsigned long long)dev, (unsigned long long)ino );
  #endif
      return dir;
  }
@@ -120,10 +120,10 @@ diff -uNr a/programs/winemenubuilder/winemenubuilder.c b/programs/winemenubuilde
 diff -uNr a/server/request.c b/server/request.c
 --- a/server/request.c
 +++ b/server/request.c
-@@ -639,15 +639,15 @@
- 
+@@ -639,11 +639,11 @@
+
      /* create the base directory if needed */
- 
+
 -#ifdef __ANDROID__  /* there's no /tmp dir on Android */
 +#if defined(__ANDROID__) && ! defined(__TERMUX__)  /* there's no /tmp dir on Android */
      if (asprintf( &base_dir, "%s/.wineserver", config_dir ) == -1)
