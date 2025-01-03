@@ -2,7 +2,7 @@
 
 --- a/dlls/winepulse.drv/pulse.c
 +++ b/dlls/winepulse.drv/pulse.c
-@@ -217,12 +217,16 @@
+@@ -240,12 +240,16 @@
  
  static NTSTATUS pulse_process_attach(void *args)
  {
@@ -17,5 +17,5 @@
      if (pthread_mutex_init(&pulse_mutex, &attr) != 0)
 +#endif
          pthread_mutex_init(&pulse_mutex, NULL);
- 
-     return STATUS_SUCCESS;
+
+ #ifdef _WIN64
